@@ -9,5 +9,6 @@ namespace EnturBusiness
 	{
 		EnturTransaction Transaction{ get; set; }
 		IEnumerable<User> GetUsers();
+		User GetUserById(int userId);
 	}
 }

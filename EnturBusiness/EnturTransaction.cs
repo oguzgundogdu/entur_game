@@ -17,6 +17,7 @@ namespace EnturBusiness
 			this.UserRepository = new GenericRepository<UserDto>( _context );
 			this.GameRepository = new GenericRepository<GameDto>( _context );
 			this.GameContentRepository = new GenericRepository<GamesXWordsXUsersDto>( _context );
+			this.SessionRepository = new GenericRepository<SessionDto>( _context );
 		}
 
 		internal GenericRepository<WordDto> WordRepository { get; set; }
@@ -26,6 +27,8 @@ namespace EnturBusiness
 		internal GenericRepository<GameDto> GameRepository { get; set; }
 
 		internal GenericRepository<GamesXWordsXUsersDto> GameContentRepository { get; set; }
+
+		internal GenericRepository<SessionDto> SessionRepository { get; set; }
 
 		public void Commit()
 		{

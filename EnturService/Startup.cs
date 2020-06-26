@@ -52,6 +52,17 @@ namespace EnturService
 			services.AddScoped<IGameManager, GameManager>();
 			_serviceProvider = services.BuildServiceProvider();
 
+			if (GameContext.Current == null)
+			{
+				lock (_syncRoot)
+				{
+					if (GameContext.Current == null)
+					{
+						GameContext.CreateGame( _serviceProvider );
+					}
+				}
+			}
+
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -76,10 +87,11 @@ namespace EnturService
 			{
 				if (ctx.Request.Path == "/ListenGame")
 				{
-					if (ctx.WebSockets.IsWebSocketRequest)
+					if (ctx.WebSockets.IsWebSocketRequest && GameContext.Current != null)
 					{
 						var wSocket = await ctx.WebSockets.AcceptWebSocketAsync();
-						await Talk( ctx, wSocket, _serviceProvider );
+
+						await Talk( ctx, wSocket);
 					}
 					else
 					{
@@ -96,40 +108,9 @@ namespace EnturService
 
 		}
 
-		private async Task Talk(HttpContext hContext, WebSocket wSocket, IServiceProvider serviceProvider)
+		private async Task Talk(HttpContext hContext, WebSocket wSocket)
 		{
-			var bag = new byte[1024];
-			WebSocketReceiveResult result = await wSocket.ReceiveAsync( new ArraySegment<byte>( bag ), CancellationToken.None );
-			SocketResponse response = new SocketResponse();
-
-			while (!result.CloseStatus.HasValue)
-			{
-				var inComingMesage = Encoding.UTF8.GetString( bag, 0, result.Count );
-
-				if (GameContext.Current == null)
-				{
-					lock (_syncRoot)
-					{
-						if (GameContext.Current == null)
-						{
-							GameContext.CreateGame( serviceProvider );
-						}
-					}
-				}
-
-				int userId = Convert.ToInt32( inComingMesage.Trim() );
-				string message;
-				response.GameContent = GameContext.Current.RequestQuestion( userId, out message );
-				response.Message = message;
-				response.Success = true;
-
-				string strJson = JsonConvert.SerializeObject( response );
-				byte[] outGoingMessage = Encoding.UTF8.GetBytes( strJson );
-				await wSocket.SendAsync( new ArraySegment<byte>( outGoingMessage, 0, outGoingMessage.Length ), result.MessageType, result.EndOfMessage, CancellationToken.None );
-				result = await wSocket.ReceiveAsync( new ArraySegment<byte>( bag ), CancellationToken.None );
-			}
-
-			await wSocket.CloseAsync( result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None );
+		
 		}
 	}
 }

@@ -12,5 +12,13 @@ namespace EnturBusiness
 		GamesXWordsXUsers PullWord();
 
 		void UpdateWord(GamesXWordsXUsers gamesXWordsXUsers);
+
+		void AddSession(int userId);
+
+		void ClearSessions();
+
+		void DeleteSession(int userId);
+
+		void ChangeTurn(int userId);
 	}
 }

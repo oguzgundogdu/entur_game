@@ -14,6 +14,7 @@ namespace EnturData
 		public DbSet<WordDto> Words { get; set; }
 		public DbSet<GameDto> Games { get; set; }
 		public DbSet<GamesXWordsXUsersDto> GameContents { get; set; }
+		public DbSet<SessionDto> Sessions { get; set; }
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{

@@ -36,6 +36,7 @@ namespace EnturService.Controllers
 		}
 
 		[HttpPost]
+		[Obsolete]
 		[Route( "RespondQuestion" )]
 		public JsonResult RespondQuestion([FromQuery( Name = "userId" )] string userId, GameContent gameContent)
 		{
@@ -45,9 +46,28 @@ namespace EnturService.Controllers
 			{
 				if (GameContext.Current != null)
 				{
-					GameContext.Current.RespondQuestion( Convert.ToInt32(userId), gameContent.Word );
+					GameContext.Current.RespondQuestion( Convert.ToInt32( userId ), gameContent.Word );
 					response.Success = true;
 				}
+			}
+			catch (Exception ex)
+			{
+				response.Message = ex.Message;
+			}
+
+			return new JsonResult( response );
+		}
+
+		[HttpGet]
+		[Route( "EnterGame" )]
+		public JsonResult EnterGame([FromQuery( Name = "userId" )] string userId, [FromServices]IUserManager userManager, [FromServices] IGameManager gameManager)
+		{
+			ResponseBase response = new ResponseBase();
+
+			try
+			{
+				GameContext.Current.EnterGame( Convert.ToInt32( userId ), gameManager, userManager );
+				response.Success = true;
 			}
 			catch (Exception ex)
 			{

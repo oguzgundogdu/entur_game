@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 
 namespace EnturBusiness
@@ -16,7 +17,7 @@ namespace EnturBusiness
 		public GamesXWordsXUsers PullWord()
 		{
 			GamesXWordsXUsers obj = null;
-			GamesXWordsXUsersDto objDto = Transaction.GameContentRepository.GetWithRawSql( "SELECT * FROM public.t_games_x_words_x_users WHERE user_id IS NULL ORDER BY random() LIMIT 1" ).First();
+			GamesXWordsXUsersDto objDto = Transaction.GameContentRepository.GetWithRawSql( "SELECT * FROM sp_pull_word" ).First();
 
 			if (objDto != null)
 			{
@@ -68,6 +69,59 @@ namespace EnturBusiness
 
 			connection.Close();
 			connection.Dispose();
+		}
+
+		public void AddSession(int userId)
+		{
+			SessionDto sessionDto = new SessionDto();
+			sessionDto.UserId = userId;
+			Transaction.SessionRepository.Insert( sessionDto );
+		}
+
+		public void ClearSessions()
+		{
+			PgConnection connection = new PgConnection();
+			connection.Open();
+
+			using (DbCommand cmd = connection.CreateCommand())
+			{
+				cmd.CommandText = "public.sp_clear_sessions";
+				cmd.CommandType = System.Data.CommandType.StoredProcedure;
+
+				cmd.ExecuteScalar();
+			}
+
+			connection.Close();
+			connection.Dispose();
+		}
+
+		public void ChangeTurn(int userId)
+		{
+			PgConnection connection = new PgConnection();
+			connection.Open();
+
+			using (DbCommand cmd = connection.CreateCommand())
+			{
+				cmd.CommandText = "public.sp_change_turn";
+				cmd.CommandType = System.Data.CommandType.StoredProcedure;
+
+				DbParameter param = cmd.CreateParameter();
+				param.ParameterName = "p_user_id";
+				param.DbType = System.Data.DbType.Int32;
+				param.Value = userId;
+				cmd.Parameters.Add( param );
+
+				cmd.ExecuteScalar();
+			}
+
+			connection.Close();
+			connection.Dispose();
+		}
+
+		public void DeleteSession(int userId)
+		{
+			SessionDto sessionDto = Transaction.SessionRepository.Get( x => x.UserId == userId ).FirstOrDefault();
+			Transaction.SessionRepository.Delete( sessionDto );
 		}
 	}
 }
