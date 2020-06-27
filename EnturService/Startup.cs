@@ -90,8 +90,7 @@ namespace EnturService
 					if (ctx.WebSockets.IsWebSocketRequest && GameContext.Current != null)
 					{
 						var wSocket = await ctx.WebSockets.AcceptWebSocketAsync();
-
-						await Talk( ctx, wSocket);
+						await GameContext.Current.Join( wSocket );
 					}
 					else
 					{

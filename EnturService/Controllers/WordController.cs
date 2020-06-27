@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using EnturBusiness;
 using EnturEntity;
-using EnturService.Responses;
-using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
+using EnturEntity.Responses;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EnturService.Controllers

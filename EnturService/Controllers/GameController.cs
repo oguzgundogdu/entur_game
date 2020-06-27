@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using EnturBusiness;
 using EnturEntity;
-using EnturService.Responses;
-using Microsoft.AspNetCore.Http;
+using EnturEntity.Responses;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EnturService.Controllers
@@ -59,8 +55,8 @@ namespace EnturService.Controllers
 		}
 
 		[HttpGet]
-		[Route( "EnterGame" )]
-		public JsonResult EnterGame([FromQuery( Name = "userId" )] string userId, [FromServices]IUserManager userManager, [FromServices] IGameManager gameManager)
+		[Route( "EnterGame/{userId}" )]
+		public JsonResult EnterGame([FromRoute( Name = "userId" )] string userId, [FromServices]IUserManager userManager, [FromServices] IGameManager gameManager)
 		{
 			ResponseBase response = new ResponseBase();
 

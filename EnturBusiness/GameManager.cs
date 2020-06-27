@@ -17,7 +17,7 @@ namespace EnturBusiness
 		public GamesXWordsXUsers PullWord()
 		{
 			GamesXWordsXUsers obj = null;
-			GamesXWordsXUsersDto objDto = Transaction.GameContentRepository.GetWithRawSql( "SELECT * FROM sp_pull_word" ).First();
+			GamesXWordsXUsersDto objDto = Transaction.GameContentRepository.GetWithRawSql( "SELECT * FROM sp_pull_word()" ).First();
 
 			if (objDto != null)
 			{
@@ -75,6 +75,7 @@ namespace EnturBusiness
 		{
 			SessionDto sessionDto = new SessionDto();
 			sessionDto.UserId = userId;
+			sessionDto.HasTurn = 'N';
 			Transaction.SessionRepository.Insert( sessionDto );
 		}
 

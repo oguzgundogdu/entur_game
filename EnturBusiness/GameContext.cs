@@ -27,7 +27,7 @@ namespace EnturBusiness
 		private static object _checkStateSync = new object();
 		private volatile GamesXWordsXUsers _currentUser;
 
-		private readonly byte[] _bag = new byte[1024];
+		private readonly byte[] _bag = new byte[4096];
 		private GameContext()
 		{
 
@@ -49,7 +49,7 @@ namespace EnturBusiness
 				content.Word = gamesXWordsXUsers;
 				content.GamePoints = _users.Values.ToList();
 
-				if (this.CurrentUser.UserId.HasValue && this.CurrentUser.UserId.Value > 0)
+				if (!this.CurrentUser.UserId.HasValue || this.CurrentUser.UserId.Value <= 0)
 				{
 					int id = -1;
 					bool isNext = false;
@@ -71,12 +71,12 @@ namespace EnturBusiness
 						id = _users.Keys.First();
 					}
 
+					this.CurrentUser.UserId = id;
+
 					gameManager.UpdateWord( this.CurrentUser );
 					gameManager.Transaction.Commit();
-
-
-					this.CurrentUser.UserId = id; 
 				}
+			
 			}
 
 			message = $"Waiting for {_users[this.CurrentUser.UserId.Value].User.Username}. The word is: {this.CurrentUser.Word.Eng} ({this.CurrentUser.Word.Tur})";
@@ -177,6 +177,11 @@ namespace EnturBusiness
 			{
 				Thread.Sleep( 5 );
 			}
+
+			while (_webSockets.ContainsKey( userId ) && !_webSockets.TryRemove( userId, out WebSocket w ))
+			{
+				Thread.Sleep( 5 );
+			}
 		}
 
 		public async Task Join(WebSocket wSocket)
@@ -270,5 +275,6 @@ namespace EnturBusiness
 			} while (result != null && !result.CloseStatus.HasValue);
 		}
 	}
+
 }
 
