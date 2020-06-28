@@ -76,10 +76,10 @@ namespace EnturBusiness
 					gameManager.UpdateWord( this.CurrentUser );
 					gameManager.Transaction.Commit();
 				}
-			
+
 			}
 
-			message = $"Waiting for {_users[this.CurrentUser.UserId.Value].User.Username}. The word is: {this.CurrentUser.Word.Eng} ({this.CurrentUser.Word.Tur})";
+			message = $"Waiting for {_users[this.CurrentUser.UserId.Value].User.Username}.</br> The word is: {this.CurrentUser.Word.Eng} ({this.CurrentUser.Word.Tur})";
 
 			return content;
 		}
@@ -152,10 +152,12 @@ namespace EnturBusiness
 			gameManager.AddSession( user.UserId );
 			trans.Commit();
 
+			int point = gameManager.GetAnsweredWordCount( userId, AnsweredWordType.Correct );
+
 			while (!Current._users.ContainsKey( user.UserId ) && !Current._users.TryAdd( user.UserId, new GamePoint
 			{
 				User = user,
-				Point = 0
+				Point = point
 			} ))
 			{
 				Thread.Sleep( 5 );
@@ -212,6 +214,10 @@ namespace EnturBusiness
 				}
 				else
 				{
+					response.GameContent = new GameContent
+					{
+						GamePoints = content.GamePoints
+					};
 					response.Message = message;
 				}
 
@@ -241,6 +247,33 @@ namespace EnturBusiness
 					break;
 				}
 
+				if (inComingMesage.StartsWith( "EXIT" ))
+				{
+					string[] arr = inComingMesage.Split( '|' );
+					int userId = Convert.ToInt32( arr[1] );
+
+					IGameManager gameManager = _gameManagers[userId];
+					gameManager.DeleteSession( userId );
+
+
+					while (_gameManagers.ContainsKey( userId ) && !_gameManagers.TryRemove( userId, out IGameManager m ))
+					{
+						Thread.Sleep( 5 );
+					}
+
+					while (_users.ContainsKey( userId ) && !_users.TryRemove( userId, out GamePoint p ))
+					{
+						Thread.Sleep( 5 );
+					}
+
+					while (_webSockets.ContainsKey( userId ) && !_webSockets.TryRemove( userId, out WebSocket w ))
+					{
+						Thread.Sleep( 5 );
+					}
+
+					break;
+				}
+
 				GamesXWordsXUsers objComing = JsonConvert.DeserializeObject<GamesXWordsXUsers>( inComingMesage );
 
 				if (objComing == null || !objComing.UserId.HasValue || !_users.ContainsKey( objComing.UserId.Value ))
@@ -248,7 +281,7 @@ namespace EnturBusiness
 					break;
 				}
 
-				SocketResponse response = new SocketResponse();
+				SocketResponse response = null;
 				SocketResponse contenderResponse = new SocketResponse();
 
 				Current.RespondQuestion( objComing.UserId.Value, objComing );
@@ -256,15 +289,27 @@ namespace EnturBusiness
 				string message;
 				GameContent contendersContent = Current.RequestQuestion( objComing.UserId.Value, out message );
 
-				response.GameContent = new GameContent();
-				response.Message = message;
-				response.Success = true;
+				if (contendersContent.Word.UserId.Value != objComing.UserId.Value)
+				{
+					response = new SocketResponse();
+					response.GameContent = new GameContent();
+					response.GameContent.GamePoints = contendersContent.GamePoints;
+					response.Message = message;
+					response.Success = true;
+				}
 
 				contenderResponse.GameContent = contendersContent;
+				contenderResponse.Success = true;
 
-				string strJson = JsonConvert.SerializeObject( response );
-				byte[] outGoingMessage = Encoding.UTF8.GetBytes( strJson );
-				await wSocket.SendAsync( new ArraySegment<byte>( outGoingMessage, 0, outGoingMessage.Length ), result.MessageType, result.EndOfMessage, CancellationToken.None );
+				string strJson = null;
+				byte[] outGoingMessage = null;
+
+				if (response != null)
+				{
+					strJson = JsonConvert.SerializeObject( response );
+					outGoingMessage = Encoding.UTF8.GetBytes( strJson );
+					await wSocket.SendAsync( new ArraySegment<byte>( outGoingMessage, 0, outGoingMessage.Length ), result.MessageType, result.EndOfMessage, CancellationToken.None );
+				}
 
 				strJson = JsonConvert.SerializeObject( contenderResponse );
 				outGoingMessage = Encoding.UTF8.GetBytes( strJson );

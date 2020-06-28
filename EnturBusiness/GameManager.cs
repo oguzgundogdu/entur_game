@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 
@@ -73,10 +74,13 @@ namespace EnturBusiness
 
 		public void AddSession(int userId)
 		{
-			SessionDto sessionDto = new SessionDto();
-			sessionDto.UserId = userId;
-			sessionDto.HasTurn = 'N';
-			Transaction.SessionRepository.Insert( sessionDto );
+			if (Transaction.SessionRepository.Get( x => x.UserId == userId ).FirstOrDefault() == null)
+			{
+				SessionDto sessionDto = new SessionDto();
+				sessionDto.UserId = userId;
+				sessionDto.HasTurn = 'N';
+				Transaction.SessionRepository.Insert( sessionDto );
+			}
 		}
 
 		public void ClearSessions()
@@ -124,5 +128,47 @@ namespace EnturBusiness
 			SessionDto sessionDto = Transaction.SessionRepository.Get( x => x.UserId == userId ).FirstOrDefault();
 			Transaction.SessionRepository.Delete( sessionDto );
 		}
+
+		public int GetAnsweredWordCount(int? userId = null, AnsweredWordType answeredWordType = AnsweredWordType.All)
+		{
+			int count = 0;
+			PgConnection connection = new PgConnection();
+			connection.Open();
+
+			using (DbCommand cmd = connection.CreateCommand())
+			{
+				StringBuilder sb = new StringBuilder( "SELECT COUNT(1) FROM t_games_x_words_x_users" );
+
+				if (userId.HasValue && userId.Value > 0)
+				{
+					sb.AppendFormat( " WHERE user_id = {0}", userId.Value );
+				}
+
+				if (answeredWordType != AnsweredWordType.All)
+				{
+					sb.AppendFormat( " AND status = {0}", (int)answeredWordType );
+				}
+
+				cmd.CommandText = sb.ToString();
+				cmd.CommandType = System.Data.CommandType.Text;
+
+				object objCount = cmd.ExecuteScalar();
+
+				if (objCount != null)
+					count = Convert.ToInt32( objCount );
+			}
+
+			connection.Close();
+			connection.Dispose();
+
+			return count;
+		}
+	}
+
+	public enum AnsweredWordType: byte
+	{
+		Correct = 1,
+		Wrong = 2,
+		All = 3
 	}
 }

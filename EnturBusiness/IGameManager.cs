@@ -20,5 +20,7 @@ namespace EnturBusiness
 		void DeleteSession(int userId);
 
 		void ChangeTurn(int userId);
+
+		int GetAnsweredWordCount(int? userId = null, AnsweredWordType answeredWordType = AnsweredWordType.All);
 	}
 }
