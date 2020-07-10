@@ -42,6 +42,7 @@ namespace EnturBusiness
 
 			IGameManager gameManager = _gameManagers[userId];
 			GamesXWordsXUsers gamesXWordsXUsers = gameManager.PullWord();
+			gameManager.Transaction.Commit();
 
 			if (gamesXWordsXUsers != null)
 			{
@@ -49,7 +50,7 @@ namespace EnturBusiness
 				content.Word = gamesXWordsXUsers;
 				content.GamePoints = _users.Values.ToList();
 
-				if (!this.CurrentUser.UserId.HasValue || this.CurrentUser.UserId.Value <= 0)
+				if (!this.CurrentUser.UserId.HasValue || this.CurrentUser.UserId.Value <= 0 || !_users.ContainsKey(this.CurrentUser.UserId.Value))
 				{
 					int id = -1;
 					bool isNext = false;
@@ -76,7 +77,6 @@ namespace EnturBusiness
 					gameManager.UpdateWord( this.CurrentUser );
 					gameManager.Transaction.Commit();
 				}
-
 			}
 
 			message = $"Waiting for {_users[this.CurrentUser.UserId.Value].User.Username}.</br> The word is: {this.CurrentUser.Word.Eng} ({this.CurrentUser.Word.Tur})";
