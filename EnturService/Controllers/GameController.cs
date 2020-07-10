@@ -19,7 +19,7 @@ namespace EnturService.Controllers
 			try
 			{
 				gameManager.StartGame();
-
+				GameContext.CreateGame( gameManager );
 				response.Message = "Game has been started";
 				response.Success = true;
 			}

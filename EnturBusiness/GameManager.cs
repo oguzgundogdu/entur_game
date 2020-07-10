@@ -18,10 +18,13 @@ namespace EnturBusiness
 		public GamesXWordsXUsers PullWord()
 		{
 			GamesXWordsXUsers obj = null;
-			GamesXWordsXUsersDto objDto = Transaction.GameContentRepository.GetWithRawSql( "SELECT * FROM sp_pull_word()" ).First();
 
-			if (objDto != null)
+			IEnumerable<GamesXWordsXUsersDto> wordList = Transaction.GameContentRepository.GetWithRawSql( "SELECT * FROM sp_pull_word()" );
+
+			if (wordList != null && wordList.Count() > 0)
 			{
+				GamesXWordsXUsersDto objDto = Transaction.GameContentRepository.GetWithRawSql( "SELECT * FROM sp_pull_word()" ).First();
+
 				obj = new GamesXWordsXUsers
 				{
 					GameId = objDto.GameId,

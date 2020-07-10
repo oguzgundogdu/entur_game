@@ -21,6 +21,9 @@ namespace EnturEntity
 		public int? UserId { get; set; }
 
 		[DataMember]
+		public string Username { get; set; }
+
+		[DataMember]
 		public short Status { get; set; }
 	}
 }

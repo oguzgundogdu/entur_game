@@ -8,5 +8,6 @@ namespace EnturEntity
 	{
 		public GamesXWordsXUsers Word { get; set; }
 		public List<GamePoint> GamePoints { get; set; }
+		public bool Finished { get; set; }
 	}
 }

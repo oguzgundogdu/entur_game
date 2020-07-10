@@ -20,7 +20,13 @@ namespace EnturData
 		{
 			if (!optionsBuilder.IsConfigured)
 			{
-				optionsBuilder.UseNpgsql( "server=localhost;Port=5432;Database=entur_game;Userid=postgres;Password=123456;" );
+#if Debug
+				optionsBuilder.UseNpgsql( Constants.CONNECTION_STRING ); 
+#endif
+
+#if Debug_Dev
+				optionsBuilder.UseNpgsql( Constants.TEST_CONNECTION_STRING ); 
+#endif
 			}
 		}
 	}

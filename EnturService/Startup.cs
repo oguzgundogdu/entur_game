@@ -106,10 +106,5 @@ namespace EnturService
 
 
 		}
-
-		private async Task Talk(HttpContext hContext, WebSocket wSocket)
-		{
-		
-		}
 	}
 }

@@ -7,9 +7,18 @@ namespace EnturData
 {
 	public class PgConnection: ConnectionBase
 	{
-		public PgConnection() : base( new NpgsqlConnection( "server=localhost;Port=5432;Database=entur_game;Userid=postgres;Password=123456;" ) )
+#if Debug
+		public PgConnection() : base( new NpgsqlConnection( Constants.CONNECTION_STRING ) )
 		{
 
 		}
+#endif
+
+#if Debug_Dev
+		public PgConnection() : base( new NpgsqlConnection( Constants.TEST_CONNECTION_STRING ) )
+		{
+
+		}
+#endif
 	}
 }

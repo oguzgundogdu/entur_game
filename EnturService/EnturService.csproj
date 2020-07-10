@@ -2,6 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Configurations>Debug;Release;Debug_Dev</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Dev|AnyCPU'">
+    <DefineConstants>TRACE;Debug_Dev</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
